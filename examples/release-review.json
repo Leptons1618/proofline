@@ -1,0 +1,104 @@
+{
+  "title": "Payments release readiness",
+  "subject": "Checkout 2.4 · RC3",
+  "date": "2026-09-24",
+  "scope": "Payment capture, retry, and receipt paths on Chromium at 390px and 1440px",
+  "author": "Coding agent",
+  "method": "Source review, targeted Vitest run, and desktop/mobile browser smoke test",
+  "sources": [
+    "src/payments/capture.ts",
+    "tests/payments/retry.test.ts",
+    "npm test -- retry",
+    "file:///checkout"
+  ],
+  "variant": "signal",
+  "verdict": {
+    "label": "BLOCK RELEASE",
+    "headline": "A retried capture can create a second charge before the release candidate ships.",
+    "next": "Propagate the original idempotency key through retry, then rerun the timeout scenario twice.",
+    "score": 62,
+    "max": 100
+  },
+  "summary": [
+    "The normal payment path completes, but retry after a timeout is not idempotent.",
+    "The duplicate-capture behavior is reproducible and has a direct customer-billing impact.",
+    "Receipt rendering remains readable at the two inspected viewport widths."
+  ],
+  "sections": [
+    {
+      "id": "decision-context",
+      "title": "Decision context",
+      "paragraphs": [
+        "RC3 is eligible to ship only if a retried capture maps to the original payment intent. The current implementation creates a fresh intent before entering the retry branch.",
+        "The review covers the supported checkout flow, not the unavailable live payment-provider replay environment."
+      ],
+      "table": {
+        "columns": ["Surface", "Result", "Decision impact"],
+        "rows": [
+          ["Normal capture", "Pass", "Primary path is ready"],
+          ["Timeout retry", "Block", "Duplicate billing risk"],
+          ["Receipt render", "Pass", "No inspected layout breakage"]
+        ]
+      },
+      "finding_ids": []
+    },
+    {
+      "id": "payment-path",
+      "title": "Payment path",
+      "paragraphs": [
+        "The retry path branches after request timeout detection and calls capture creation with a newly generated idempotency key. The provider therefore treats the retry as a second payment intent."
+      ],
+      "finding_ids": ["PAY-01"]
+    },
+    {
+      "id": "receipt",
+      "title": "Receipt presentation",
+      "paragraphs": [
+        "The receipt uses the existing table component and wraps long provider references without horizontal overflow. Both inspected viewport widths retained visible focus and readable evidence."
+      ],
+      "finding_ids": ["UI-01"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "PAY-01",
+      "severity": "MAJOR",
+      "title": "Retry creates a fresh idempotency key",
+      "observation": "A capture retried after a client timeout can create a second provider payment intent.",
+      "evidence": "retry.ts:41  const retryKey = createIdempotencyKey(paymentId)\nretry.ts:47  return capture({ amount, idempotencyKey: retryKey })\n\ntargeted run: retry after timeout → PASS count 2, expected 1",
+      "location": "src/payments/retry.ts:41",
+      "section": "Payment path",
+      "impact": "A transient network failure can charge the customer twice.",
+      "fix": "Pass the original capture idempotency key into the retry branch and assert one provider intent across two attempts.",
+      "confidence": "high"
+    },
+    {
+      "id": "UI-01",
+      "severity": "PASS",
+      "title": "Receipt remains readable at inspected widths",
+      "observation": "The receipt preserved table labels, focus visibility, and provider-reference wrapping at 390px and 1440px.",
+      "evidence": "390×844 receipt: document.scrollWidth 390; focused reference outline visible\n1440×1000 receipt: document.scrollWidth 1440; no clipped cells",
+      "location": "src/checkout/Receipt.tsx:18",
+      "section": "Receipt presentation",
+      "impact": "Customers can inspect the final charge details on the supported desktop and mobile widths inspected.",
+      "fix": "Preserve the current wrapping assertion when changing the receipt table.",
+      "confidence": "high"
+    }
+  ],
+  "verification": {
+    "ran": [
+      "npm test -- retry — 18 passed, 1 failed; failure reproduced twice",
+      "Opened file:///checkout at 390×844 and 1440×1000 — receipt and evidence remained readable"
+    ],
+    "not_verified": [
+      "Live payment-provider sandbox replay was unavailable",
+      "Firefox and Safari print previews were not inspected"
+    ]
+  },
+  "stats": {
+    "critical": 0,
+    "major": 1,
+    "verified_cases": 3,
+    "viewport_widths": 2
+  }
+}
