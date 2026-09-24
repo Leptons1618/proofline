@@ -406,7 +406,7 @@ def render_html(data: dict[str, Any]) -> str:
         f"<li>{render_location(source)}</li>" for source in data["sources"]
     )
     sources_html = (
-        f'<section class="sources"><h2>Sources</h2><ol>{sources}</ol></section>'
+        f'<section class="sources" aria-labelledby="sources-title"><h2 id="sources-title">Sources</h2><ol>{sources}</ol></section>'
         if sources
         else ""
     )
@@ -640,7 +640,8 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     try:
-        return parser().parse_args().handler(parser().parse_args())
+        args = parser().parse_args()
+        return args.handler(args)
     except ReportError as exc:
         print(f"proofline: {exc}", file=sys.stderr)
         return 2
@@ -661,7 +662,7 @@ main{display:block;max-width:1184px;margin:0 auto;padding:0 28px 80px}.decision{
 @media(max-width:820px){.masthead{grid-template-columns:52px 1fr}.masthead-title{padding:0 0 0 20px}.metadata{grid-column:1/-1;grid-template-columns:repeat(2,1fr);margin-top:28px;border-left:0;border-top:1px solid var(--line)}.metadata>div{padding-right:16px}.decision{grid-template-columns:1fr}.score{text-align:left}.summary-grid,.variant-essay .summary-grid{grid-template-columns:1fr 1fr}.contents{grid-template-columns:1fr}.contents ol{grid-template-columns:1fr}.section-head{grid-template-columns:84px 1fr}.verification-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.masthead{padding:24px 18px}.masthead-mark{width:38px;height:52px;font-size:25px;line-height:50px}.masthead-title{padding-left:14px}h1{font-size:46px}.metadata{grid-template-columns:1fr}.metadata>div{grid-template-columns:82px 1fr}main{padding-inline:18px}.decision{margin-block:36px;padding:20px}.summary{margin-bottom:48px}.summary>header,.verification>header{grid-template-columns:1fr;gap:8px}.summary-grid,.variant-essay .summary-grid{grid-template-columns:1fr}.summary-card{min-height:0}.summary-card span{margin-bottom:16px}.contents{margin-bottom:56px}.report-section{margin-bottom:64px}.section-head{grid-template-columns:1fr}.section-number{font-size:48px}.finding{grid-template-columns:1fr}.finding-rail{height:auto;flex-direction:row;gap:12px;padding:10px 14px;border-right:0;border-bottom:1px solid var(--line);writing-mode:initial;transform:none}.finding-rail i{width:auto;height:1px;margin:0}.finding-body{padding:18px}.finding-row{grid-template-columns:1fr;gap:5px}.verification{padding:20px}.verification-grid{gap:24px}footer{grid-template-columns:1fr;padding-inline:18px}footer p:last-child{text-align:left}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-@media print{@page{margin:14mm}html,body{background:#fff!important;color:#111!important;font-size:10.5pt}.skip-link,.masthead-mark{display:none}.masthead{max-width:none;padding:0 0 18pt;border-top:5pt solid #111;border-bottom:1pt solid #777;background:#fff}.masthead-title{padding:0}.masthead h1{font-size:34pt}.metadata{color:#222}.decision{grid-template-columns:.6fr 1.4fr;margin:24pt 0;padding:16pt;background:#fff;color:#111;border:1pt solid #111}.decision p,.decision-copy>p,.decision .next span,.score span{color:#222!important}.score{grid-column:2}.summary{margin-bottom:28pt}.summary-grid{grid-template-columns:repeat(3,1fr)}.report-section{margin-bottom:36pt}.finding,.verification,.table-scroll{background:#fff;color:#111;box-shadow:none!important;break-inside:avoid}.finding-body{padding:14pt}.evidence{background:#fff}.evidence>span{background:#eee;color:#111}.fix{background:#f2f2f2}.contents{display:none}footer{max-width:none;color:#222}a{color:#111}}
+@media print{@page{margin:14mm}html,body{background:#fff!important;color:#111!important;font-size:10.5pt}.skip-link,.masthead-mark{display:none}.masthead{max-width:none;padding:0 0 18pt;border-top:5pt solid #111;border-bottom:1pt solid #777;background:#fff}.masthead-title{padding:0}.masthead h1{font-size:34pt}.metadata{color:#222}.decision{grid-template-columns:.55fr 1.25fr auto;margin:24pt 0;padding:16pt;background:#fff;color:#111;border:1pt solid #111}.decision p,.decision-copy>p,.decision .next span,.score span{color:#222!important}.score{min-width:72pt}.summary{margin-bottom:28pt}.summary-grid{grid-template-columns:repeat(3,1fr)}.report-section{margin-bottom:36pt}.finding,.verification,.table-scroll{background:#fff;color:#111;box-shadow:none!important;break-inside:avoid}.finding-body{padding:14pt}.evidence{background:#fff}.evidence>span{background:#eee;color:#111}.fix{background:#f2f2f2}.contents{display:none}footer{max-width:none;color:#222}a{color:#111}}
 """
 
 
